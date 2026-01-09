@@ -1,0 +1,10 @@
+# Databases
+*.db
+
+# Virtual env
+venv/
+.venv/
+
+# Env vars
+.env
+

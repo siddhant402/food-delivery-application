@@ -6,6 +6,7 @@ from app.models.order import Order
 from app.schemas.order import OrderOut, OrderStatusUpdate
 from app.core.auth import require_roles, get_current_user
 from app.core.order_status import OrderStatus
+from app.core.order_events import notify_order_status_change
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -97,6 +98,9 @@ def update_order_status(
     order.status = new_status.value
     db.commit()
     db.refresh(order)
+
+    notify_order_status_change(db, order)
+
     return order
 
 

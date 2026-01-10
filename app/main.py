@@ -8,6 +8,8 @@ from app.api.v1.protected import router as protected_router
 from app.api.v1.public import router as public_router
 from app.api.v1.restaurants import router as restaurant_router
 from app.api.v1.admin import router as admin_router
+from app.api.v1.notifications import router as notification_router
+from app.api.v1.payments import router as payment_router
 
 app = FastAPI(title="Food Delivery Application")
 app.include_router(auth_router, prefix="/api/v1")
@@ -18,6 +20,8 @@ app.include_router(public_router, prefix="/api/v1")
 app.include_router(cart_router, prefix="/api/v1")
 app.include_router(order_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
+app.include_router(notification_router, prefix="/api/v1")
+app.include_router(payment_router, prefix="/api/v1")
 
 
 @app.get("/api/v1/health")

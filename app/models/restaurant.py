@@ -6,15 +6,18 @@ from app.db.base import Base
 class Restaurant(Base):
     __tablename__ = "restaurants"
 
-
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, index=True)
-    address = Column(String, nullable=False)
+
+    # Identity
+    name = Column(String, nullable=False)  # Restaurant name
+    description = Column(String, nullable=True)
+
+    # Address (normalized)
+    address_line = Column(String, nullable=False)  # Street / building
+    locality = Column(String, nullable=False)  # Area (HSR Layout)
+    city = Column(String, nullable=False)
+    state = Column(String, nullable=False)
+    pincode = Column(String, nullable=False)
+
+    is_active = Column(Boolean, default=False)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-
-    is_approved = Column(Boolean, default=False)
-    is_open = Column(Boolean, default=False)
-
-
-    owner = relationship("User", backref="restaurants")

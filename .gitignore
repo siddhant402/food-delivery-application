@@ -8,3 +8,4 @@ venv/
 # Env vars
 .env
 
+.idea/

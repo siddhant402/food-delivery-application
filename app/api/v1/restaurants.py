@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_, asc, desc
 
 from app.db.deps import get_db
 from app.models.restaurant import Restaurant
-from app.schemas.restaurant import RestaurantCreate, RestaurantOut
+from app.schemas.restaurant import (
+    RestaurantCreate,
+    RestaurantOut,
+    RestaurantListResponse,
+)
 from app.core.auth import get_current_user, require_roles
 
 router = APIRouter(prefix="/restaurants", tags=["Restaurants"])
@@ -56,3 +61,81 @@ def approve_restaurant(
     db.commit()
     db.refresh(restaurant)
     return restaurant
+
+
+MAX_LIMIT = 50
+
+
+@router.get("/discover", response_model=RestaurantListResponse)
+def discover_restaurants(
+        city: str = Query(..., min_length=2),
+        locality: str | None = Query(None),
+        pincode: str | None = Query(None),
+
+        limit: int = Query(20, ge=1, le=MAX_LIMIT),
+        offset: int = Query(0, ge=0),
+
+        sort_by: str = Query("name"),
+        order: str = Query("asc"),
+
+        db: Session = Depends(get_db),
+):
+    # Validation
+    if not locality and not pincode:
+        raise HTTPException(
+            status_code=400,
+            detail="Either locality or pincode must be provided",
+        )
+
+    query = db.query(Restaurant).filter(
+        Restaurant.city == city,
+        Restaurant.is_active == True,
+    )
+
+    if locality and pincode:
+        query = query.filter(
+            or_(
+                Restaurant.locality == locality,
+                Restaurant.pincode == pincode,
+            )
+        )
+    elif locality:
+        query = query.filter(Restaurant.locality == locality)
+    elif pincode:
+        query = query.filter(Restaurant.pincode == pincode)
+
+    # Sorting
+    if sort_by == "name":
+        sort_column = Restaurant.name
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid sort field",
+        )
+
+    if order == "asc":
+        query = query.order_by(
+            asc(sort_column),
+            asc(Restaurant.id),
+        )
+    else:
+        query = query.order_by(
+            desc(sort_column),
+            desc(Restaurant.id),
+        )
+
+    # Compute total count BEFORE pagination
+    total_count = query.count()
+
+    # Apply pagination
+    items = (
+        query
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "total_count": total_count,
+        "items": items,
+    }

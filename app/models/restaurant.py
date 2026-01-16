@@ -1,10 +1,17 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 
 class Restaurant(Base):
     __tablename__ = "restaurants"
+
+    __table_args__ = (
+        Index("idx_city", "city"),
+        Index("idx_locality", "locality"),
+        Index("idx_pincode", "pincode"),
+        Index("idx_is_active", "is_active"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
 

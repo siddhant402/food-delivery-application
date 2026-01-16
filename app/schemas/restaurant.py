@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class RestaurantCreate(BaseModel):
@@ -28,6 +29,11 @@ class RestaurantOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RestaurantListResponse(BaseModel):
+    total_count: int
+    items: List[RestaurantOut]
 
 
 class Config:
